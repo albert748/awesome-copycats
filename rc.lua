@@ -1,3 +1,9 @@
+-- -*- mode: lua -*-
+
+--- {{{ Required libraries
+local awesome, client, mouse, screen, tag = awesome, client, mouse, screen, tag
+local ipairs, string, os, table, tostring, tonumber, type = ipairs, string, os, table, tostring, tonumber, type
+
 local awful = require("awful")
 local config_path = awful.util.getdir("config")
 package.path = config_path .. "/?.lua;" .. package.path
@@ -44,6 +50,8 @@ local capi = {
 }
 
 local timer = require("gears.timer")
+
+-- }}}
 
 -- do not use letters, which shadow access key to menu entry
 awful.menu.menu_keys.down = { "Down", ".", ">", "'", "\"", }
@@ -193,16 +201,18 @@ do
     customization.orig.quit = awesome.quit
     awesome.quit = function ()
         local scr = awful.screen.focused()
-        awful.prompt.run({prompt = "Quit (type 'yes' to confirm)? "},
-        customization.widgets.promptbox[scr].widget,
-        function (t)
-            if string.lower(t) == 'yes' then
+        awful.prompt.run({
+            prompt = "Quit (type 'yes' to confirm)? ",
+            textbox = customization.widgets.promptbox[scr].widget,
+            exe_callback = function (t)
+              if string.lower(t) == 'yes' then
                 customization.orig.quit()
+              end
+            end,
+            completion_callback = function (t, p, n)
+              return awful.completion.generic(t, p, n, {'no', 'NO', 'yes', 'YES'})
             end
-        end,
-        function (t, p, n)
-            return awful.completion.generic(t, p, n, {'no', 'NO', 'yes', 'YES'})
-        end)
+        })
     end
 end
 
@@ -211,16 +221,18 @@ do
     customization.orig.restart = awesome.restart
     awesome.restart = function ()
         local scr = awful.screen.focused()
-        awful.prompt.run({prompt = "Restart (type 'yes' to confirm)? "},
-        customization.widgets.promptbox[scr].widget,
-        function (t)
-            if string.lower(t) == 'yes' then
+        awful.prompt.run({
+            prompt = "Restart (type 'yes' to confirm)? ",
+            textbox = customization.widgets.promptbox[scr].widget,
+            exe_callback = function (t)
+              if string.lower(t) == 'yes' then
                 customization.orig.restart()
+              end
+            end,
+            completion_callback = function (t, p, n)
+              return awful.completion.generic(t, p, n, {'no', 'NO', 'yes', 'YES'})
             end
-        end,
-        function (t, p, n)
-            return awful.completion.generic(t, p, n, {'no', 'NO', 'yes', 'YES'})
-        end)
+        })
     end
 end
 
@@ -230,6 +242,21 @@ end
 -- Themes define colours, icons, and wallpapers
 ---[[
 
+local themes = {
+    "blackburn",       -- 1
+    "copland",         -- 2
+    "dremora",         -- 3
+    "holo",            -- 4
+    "multicolor",      -- 5
+    "powerarrow",      -- 6
+    "powerarrow-dark", -- 7
+    "rainbow",         -- 8
+    "steamburn",       -- 9
+    "vertex",          -- 10
+    "zenburn",         -- 11
+}
+
+
 do
     local config_path = awful.util.getdir("config")
     local function init_theme(theme_name)
@@ -237,9 +264,9 @@ do
         beautiful.init(theme_path)
     end
 
-    init_theme("zenburn")
+    init_theme(themes[5])
 
-    awful.spawn.with_shell("hsetroot -solid '#000000'")
+    awful.spawn.with_shell("xsetroot -solid '#000000'")
 
     -- randomly select a background picture
     --{{
@@ -375,60 +402,68 @@ end
 
 customization.func.system_hibernate = function ()
     local scr = awful.screen.focused()
-    awful.prompt.run({prompt = "Hibernate (type 'yes' to confirm)? "},
-    customization.widgets.promptbox[scr].widget,
-    function (t)
-        if string.lower(t) == 'yes' then
+    awful.prompt.run({
+        prompt = "Hibernate (type 'yes' to confirm)? ",
+        textbox = customization.widgets.promptbox[scr].widget,
+        exe_callback = function (t)
+          if string.lower(t) == 'yes' then
             awful.spawn.spawn("systemctl hibernate")
+          end
+        end,
+        completion_callback = function (t, p, n)
+          return awful.completion.generic(t, p, n, {'no', 'NO', 'yes', 'YES'})
         end
-    end,
-    function (t, p, n)
-        return awful.completion.generic(t, p, n, {'no', 'NO', 'yes', 'YES'})
-    end)
+    })
 end
 
 customization.func.system_hybrid_sleep = function ()
     local scr = awful.screen.focused()
-    awful.prompt.run({prompt = "Hybrid Sleep (type 'yes' to confirm)? "},
-    customization.widgets.promptbox[scr].widget,
-    function (t)
-        if string.lower(t) == 'yes' then
+    awful.prompt.run({
+        prompt = "Hybrid Sleep (type 'yes' to confirm)? ",
+        textbox = customization.widgets.promptbox[scr].widget,
+        exe_callback = function (t)
+          if string.lower(t) == 'yes' then
             awful.spawn.spawn("systemctl hybrid-sleep")
+          end
+        end,
+        completion_callback = function (t, p, n)
+          return awful.completion.generic(t, p, n, {'no', 'NO', 'yes', 'YES'})
         end
-    end,
-    function (t, p, n)
-        return awful.completion.generic(t, p, n, {'no', 'NO', 'yes', 'YES'})
-    end)
+    })
 end
 
 customization.func.system_reboot = function ()
     local scr = awful.screen.focused()
-    awful.prompt.run({prompt = "Reboot (type 'yes' to confirm)? "},
-    customization.widgets.promptbox[scr].widget,
-    function (t)
-        if string.lower(t) == 'yes' then
+    awful.prompt.run({
+        prompt = "Reboot (type 'yes' to confirm)? ",
+        textbox = customization.widgets.promptbox[scr].widget,
+        exe_callback = function (t)
+          if string.lower(t) == 'yes' then
             awesome.emit_signal("exit", nil)
             awful.spawn.spawn("systemctl reboot")
+          end
+        end,
+        completion_callback = function (t, p, n)
+          return awful.completion.generic(t, p, n, {'no', 'NO', 'yes', 'YES'})
         end
-    end,
-    function (t, p, n)
-        return awful.completion.generic(t, p, n, {'no', 'NO', 'yes', 'YES'})
-    end)
+    })
 end
 
 customization.func.system_power_off = function ()
     local scr = awful.screen.focused()
-    awful.prompt.run({prompt = "Power Off (type 'yes' to confirm)? "},
-    customization.widgets.promptbox[scr].widget,
-    function (t)
-        if string.lower(t) == 'yes' then
+    awful.prompt.run({
+        prompt = "Power Off (type 'yes' to confirm)? ",
+        textbox = customization.widgets.promptbox[scr].widget,
+        exe_callback = function (t)
+          if string.lower(t) == 'yes' then
             awesome.emit_signal("exit", nil)
             awful.spawn.spawn("systemctl poweroff")
+          end
+        end,
+        completion_callback = function (t, p, n)
+          return awful.completion.generic(t, p, n, {'no', 'NO', 'yes', 'YES'})
         end
-    end,
-    function (t, p, n)
-        return awful.completion.generic(t, p, n, {'no', 'NO', 'yes', 'YES'})
-    end)
+    })
 end
 
 customization.func.app_finder = function ()
@@ -463,18 +498,19 @@ customization.func.client_move_to_tag = function ()
     for _, t in ipairs(awful.tag.gettags(scr)) do -- only the current screen
         table.insert(keywords, t.name)
     end
-    awful.prompt.run({prompt = "Move client to tag: "},
-    customization.widgets.promptbox[scr].widget,
-    function (t)
-        local tag = util.tag.name2tag(t)
-        if tag then
+    awful.prompt.run({
+        prompt = "Move client to tag: ",
+        textbox = customization.widgets.promptbox[scr].widget,
+        exe_callback = function (t)
+          local tag = util.tag.name2tag(t)
+          if tag then
             awful.client.movetotag(tag)
+          end
+        end,
+        completion_callback = function (t, p, n)
+          return awful.completion.generic(t, p, n, keywords)
         end
-    end,
-    function (t, p, n)
-        return awful.completion.generic(t, p, n, keywords)
-    end,
-    nil)
+    })
 end
 
 customization.func.client_toggle_tag = function (c)
@@ -484,18 +520,19 @@ customization.func.client_toggle_tag = function (c)
         table.insert(keywords, t.name)
     end
     local c = c or client.focus
-    awful.prompt.run({prompt = "Toggle tag for " .. c.name .. ": "},
-    customization.widgets.promptbox[scr].widget,
-    function (t)
-        local tag = util.tag.name2tag(t)
-        if tag then
+    awful.prompt.run({
+        prompt = "Toggle tag for " .. c.name .. ": ",
+        textbox = customization.widgets.promptbox[scr].widget,
+        exe_callback = function (t)
+          local tag = util.tag.name2tag(t)
+          if tag then
             awful.client.toggletag(tag)
+          end
+        end,
+        completion_callback = function (t, p, n)
+          return awful.completion.generic(t, p, n, keywords)
         end
-    end,
-    function (t, p, n)
-        return awful.completion.generic(t, p, n, keywords)
-    end,
-    nil)
+    })
 end
 
 customization.func.client_toggle_titlebar = function ()
@@ -1106,17 +1143,19 @@ customization.func.tag_goto = function ()
     for _, t in ipairs(awful.tag.gettags(scr)) do -- only the current screen
         table.insert(keywords, t.name)
     end
-    awful.prompt.run({prompt = "Goto tag: "},
-    customization.widgets.promptbox[scr].widget,
-    function (t)
-        local tag = util.tag.name2tag(t)
-        if tag then
+    awful.prompt.run({
+        prompt = "Goto tag: ",
+        textbox = customization.widgets.promptbox[scr].widget,
+        exe_callback = function (t)
+          local tag = util.tag.name2tag(t)
+          if tag then
             tag:view_only()
+          end
+        end,
+        completion_callback = function (t, p, n)
+          return awful.completion.generic(t, p, n, keywords)
         end
-    end,
-    function (t, p, n)
-        return awful.completion.generic(t, p, n, keywords)
-    end)
+    })
 end
 
 customization.func.tag_move_forward = function ()
@@ -1338,18 +1377,20 @@ customization.func.clients_on_tag_prompt = function ()
       end
     end
     if next(clients) ~= nil then
-      awful.prompt.run({prompt = "Focus on client on current tag: "},
-      customization.widgets.promptbox[scr].widget,
-      function (t)
-        local c = clients[t]
-        if c then
-          client.focus = c
-          c:raise()
-        end
-      end,
-      function (t, p, n)
-        return awful.completion.generic(t, p, n, keywords)
-      end)
+      awful.prompt.run({
+          prompt = "Focus on client on current tag: ",
+          textbox = customization.widgets.promptbox[scr].widget,
+          exe_callback = function (t)
+            local c = clients[t]
+            if c then
+              client.focus = c
+              c:raise()
+            end
+          end,
+          completion_callback = function (t, p, n)
+            return awful.completion.generic(t, p, n, keywords)
+          end
+      })
     end
   end
 end
@@ -1411,22 +1452,24 @@ customization.func.all_clients_prompt = function ()
     end
   end
   if next(clients) ~= nil then
-    awful.prompt.run({prompt = "Focus on client from global list: "},
-    customization.widgets.promptbox[scr].widget,
-    function (t)
-      local c = clients[t]
-      if c then
-        local t = c:tags()
-        if t then
-          t[1]:view_only()
+    awful.prompt.run({
+        prompt = "Focus on client from global list: ",
+        textbox = customization.widgets.promptbox[scr].widget,
+        exe_callback = function (t)
+          local c = clients[t]
+          if c then
+            local t = c:tags()
+            if t then
+              t[1]:view_only()
+            end
+            client.focus = c
+            c:raise()
+          end
+        end,
+        completion_callback = function (t, p, n)
+          return awful.completion.generic(t, p, n, keywords)
         end
-        client.focus = c
-        c:raise()
-      end
-    end,
-    function (t, p, n)
-      return awful.completion.generic(t, p, n, keywords)
-    end)
+    })
   end
 end
 
@@ -1614,7 +1657,7 @@ customization.widgets.bat.warning_threshold = 10
 customization.widgets.bat.instance = "BAT0"
 customization.widgets.bat.forced_width = 8
 customization.widgets.bat.forced_height = 10
-customization.widgets.bat:set_vertical(true)
+wibox.container.rotate(customization.widgets.bat)
 customization.widgets.bat:set_background_color("#494B4F")
 customization.widgets.bat:set_border_color(nil)
 customization.widgets.bat:set_color({
@@ -1839,6 +1882,23 @@ end
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
 screen.connect_signal("property::geometry", set_wallpaper)
 
+-- Create a wibox for each screen and add it
+awful.screen.connect_for_each_screen(
+  function(s)
+    beautiful.at_screen_connect(s)
+    -- adaption
+    customization.widgets.promptbox[s] = s.mypromptbox
+    customization.widgets.layoutbox[s] = s.mylayoutbox
+    customization.widgets.taglist[s] = s.mytaglist
+    customization.widgets.tasklist[s] = s.mytasklist
+    customization.widgets.wibox[s] = s.mywibox
+
+    -- FIXME
+    customization.widgets.uniarg[s] = wibox.widget.textbox()
+  end
+)
+
+--[[
 local prev_scr_count = nil
 awful.screen.connect_for_each_screen(
 function(s)
@@ -1909,8 +1969,9 @@ function(s)
         },
     }
 
-end
+  end
 )
+--]]
 
 util.taglist.set_taglist(customization.widgets.taglist)
 -- }}}
@@ -1950,7 +2011,7 @@ do
                             ncol = customization.default.property.ncol,
                         }
                         )
-                        awful.tag.move(count[count_index], tag)
+                        tag.index = count[count_index]
                         count[count_index] = count[count_index]+1
                     end
                 end
@@ -2031,36 +2092,44 @@ globalkeys = awful.util.table.join(
 awful.key({ modkey }, "u",
 function ()
     uniarg:activate()
-    awful.prompt.run({prompt = "Universal Argument: ", text='' .. uniarg.arg, selectall=true},
-    customization.widgets.promptbox[awful.screen.focused()].widget,
-    function (t)
-        uniarg.persistent = false
-        local n = t:match("%d+")
-        if n then
+    awful.prompt.run({
+        prompt = "Universal Argument: ",
+        text = '' .. uniarg.arg,
+        selectall = true,
+        textbox = customization.widgets.promptbox[awful.screen.focused()].widget,
+        exe_callback = function (t)
+          uniarg.persistent = false
+          local n = t:match("%d+")
+          if n then
             uniarg:set(n)
             uniarg:update_textbox()
             if uniarg.arg>1 then
-                return
+              return
             end
+          end
+          uniarg:deactivate()
         end
-        uniarg:deactivate()
-    end)
+    })
 end),
 
 -- persistent universal arguments
 awful.key({ modkey, "Shift" }, "u",
 function ()
     uniarg:activate()
-    awful.prompt.run({prompt = "Persistent Universal Argument: ", text='' .. uniarg.arg, selectall=true},
-    customization.widgets.promptbox[awful.screen.focused()].widget,
-    function (t)
-        uniarg.persistent = true
-        local n = t:match("%d+")
-        if n then
+    awful.prompt.run({
+        prompt = "Persistent Universal Argument: ",
+        text = '' .. uniarg.arg,
+        selectall = true,
+        textbox = customization.widgets.promptbox[awful.screen.focused()].widget,
+        exe_callback = function (t)
+          uniarg.persistent = true
+          local n = t:match("%d+")
+          if n then
             uniarg:set(n)
+          end
+          uniarg:update_textbox()
         end
-        uniarg:update_textbox()
-    end)
+    })
 end),
 
 -- window management
@@ -2110,21 +2179,23 @@ uniarg:key_repeat({ modkey, "Mod1", "Control" }, "\\", foggy.menu),
 --- misc
 
 awful.key({modkey}, "F2", function()
-    awful.prompt.run(
-    {prompt = "Run: "},
-    customization.widgets.promptbox[awful.screen.focused()].widget,
-    awful.spawn.spawn, awful.completion.shell,
-    awful.util.getdir("cache") .. "/history"
-    )
+    awful.prompt.run({
+        prompt = "Run: ",
+        textbox = customization.widgets.promptbox[awful.screen.focused()].widget,
+        exe_callback =  awful.spawn.spawn,
+        completion_callback = awful.completion.shell,
+        history_path = awful.util.getdir("cache") .. "/history"
+    })
 end),
 
 awful.key({modkey}, "r", function()
-    awful.prompt.run(
-    {prompt = "Run: "},
-    customization.widgets.promptbox[awful.screen.focused()].widget,
-    awful.spawn.spawn, awful.completion.shell,
-    awful.util.getdir("cache") .. "/history"
-    )
+    awful.prompt.run({
+        prompt = "Run: ",
+        textbox = customization.widgets.promptbox[awful.screen.focused()].widget,
+        exe_callback = awful.spawn.spawn,
+        completion_callback = awful.completion.shell,
+        history_path = awful.util.getdir("cache") .. "/history"
+    })
 end),
 
 awful.key({modkey}, "F3", function()
@@ -2133,12 +2204,13 @@ awful.key({modkey}, "F3", function()
 end),
 
 awful.key({modkey}, "F4", function()
-    awful.prompt.run(
-    {prompt = "Run Lua code: "},
-    customization.widgets.promptbox[awful.screen.focused()].widget,
-    awful.util.eval, nil,
-    awful.util.getdir("cache") .. "/history_eval"
-    )
+    awful.prompt.run({
+        prompt = "Run Lua code: ",
+        textbox = customization.widgets.promptbox[awful.screen.focused()].widget,
+        exe_callback = awful.util.eval,
+        completion_callback = nil,
+        history_path = awful.util.getdir("cache") .. "/history_eval"
+    })
 end),
 
 awful.key({ modkey }, "c", function ()
@@ -2610,22 +2682,23 @@ for i = 1, 10 do
     awful.key({ modkey }, keycode,
     function ()
         local tag
-        local tags = awful.tag.gettags(awful.screen.focused())
+        local tags = awful.screen.focused().tags
         if i <= #tags then
             tag = tags[i]
         else
             local scr = awful.screen.focused()
-            awful.prompt.run({prompt = "<span fgcolor='red'>new tag: </span>"},
-            customization.widgets.promptbox[scr].widget,
-            function (text)
-                if #text>0 then
+            awful.prompt.run({
+                prompt = "<span fgcolor='red'>new tag: </span>",
+                textbox = customization.widgets.promptbox[scr].widget,
+                exe_callback = function (text)
+                  if #text>0 then
                     tag = awful.tag.add(text)
                     tag.screen = scr
-                    awful.tag.move(#tags+1, tag)
+                    tag.index = #tags+1
                     tag:view_only()
+                  end
                 end
-            end,
-            nil)
+            })
         end
         if tag then
             tag:view_only()
@@ -2640,17 +2713,18 @@ for i = 1, 10 do
             tag = tags[i]
         else
             local scr = awful.screen.focused()
-            awful.prompt.run({prompt = "<span fgcolor='red'>new tag: </span>"},
-            customization.widgets.promptbox[scr].widget,
-            function (text)
-                if #text>0 then
+            awful.prompt.run({
+                prompt = "<span fgcolor='red'>new tag: </span>",
+                textbox = customization.widgets.promptbox[scr].widget,
+                exe_callback = function (text)
+                  if #text>0 then
                     tag = awful.tag.add(text)
                     tag.screen = scr
-                    awful.tag.move(#tags+1, tag)
+                    tag.index = #tags+1
                     tag:view_only()
+                  end
                 end
-            end,
-            nil)
+            })
         end
         if tag then
             awful.tag.viewtoggle(tag)
@@ -2668,17 +2742,18 @@ for i = 1, 10 do
                 tag = tags[i]
             else
                 local scr = awful.screen.focused()
-                awful.prompt.run({prompt = "<span fgcolor='red'>new tag: </span>"},
-                customization.widgets.promptbox[scr].widget,
-                function (text)
-                    if #text>0 then
+                awful.prompt.run({
+                    prompt = "<span fgcolor='red'>new tag: </span>",
+                    textbox = customization.widgets.promptbox[scr].widget,
+                    exe_callback = function (text)
+                      if #text>0 then
                         tag = awful.tag.add(text)
                         tag.screen = scr
-                        awful.tag.move(#tags+1, tag)
+                        tag.index = #tags+1
                         tag:view_only()
+                      end
                     end
-                end,
-                nil)
+                })
             end
             if tag then
                 awful.client.movetotag(tag)
@@ -2697,17 +2772,18 @@ for i = 1, 10 do
                 tag = tags[i]
             else
                 local scr = awful.screen.focused()
-                awful.prompt.run({prompt = "<span fgcolor='red'>new tag: </span>"},
-                customization.widgets.promptbox[scr].widget,
-                function (text)
-                    if #text>0 then
+                awful.prompt.run({
+                    prompt = "<span fgcolor='red'>new tag: </span>",
+                    textbox = customization.widgets.promptbox[scr].widget,
+                    exe_callback = function (text)
+                      if #text>0 then
                         tag = awful.tag.add(text)
                         tag.screen = scr
-                        awful.tag.move(#tags+1, tag)
+                        tag.index = #tags+1
                         tag:view_only()
+                      end
                     end
-                end,
-                nil)
+                })
             end
             if tag then
                 awful.client.toggletag(tag)

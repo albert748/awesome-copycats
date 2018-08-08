@@ -148,32 +148,33 @@ function util.tag.rename(tag, newp)
 
     awful.prompt.run(
     {
-        fg_cursor = fg,
-        bg_cursor = bg,
-        ul_cursor = "single",
-        text = text,
-        selectall = true
-    },
-    -- taglist internals -- found with the debug code above
-    util.taglist.taglist[scr].children[t.index].widget.children[2].widget,
-    function (name)
+      fg_cursor = fg,
+      bg_cursor = bg,
+      ul_cursor = "single",
+      text = text,
+      selectall = true,
+
+      -- taglist internals -- found with the debug code above
+      textbox = util.taglist.taglist[scr].children[t.index].widget.children[2].widget,
+      exe_callback = function (name)
         if name:len() > 0 then
-            t.name = name;
+          t.name = name;
         end
-    end,
-    nil,
-    nil,
-    nil,
-    function ()
+      end,
+      completion_callback = nil,
+      history_path = nil,
+      history_max = nil,
+      done_callback = nil,
+      changed_callback = function ()
         if t.name == before then
-            if newp then
-                t:delete()
-            end
+          if newp then
+            t:delete()
+          end
         else
-            t:emit_signal("property::name")
+          t:emit_signal("property::name")
         end
-    end
-    )
+      end
+    })
 end
 
 --pread
