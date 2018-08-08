@@ -70,6 +70,7 @@ customization.default = {}
 customization.option = {}
 customization.timer = {}
 customization.widgets = {}
+customization.tools = {}
 
 customization.config.version = "4.0.12"
 customization.config.help_url = "https://github.com/pw4ever/awesome-wm-config/tree/" .. customization.config.version
@@ -239,6 +240,54 @@ end
 -- }}}
 
 -- {{{ Variable definitions
+
+-- This is used later as the default terminal and editor to run.
+
+--{{
+customization.tools.terminal = "sakura"
+customization.tools.system = {
+    filemanager = "pcmanfm",
+    taskmanager = "lxtask",
+}
+customization.tools.browser = {}
+customization.tools.editor = {}
+
+
+customization.tools.browser.primary = os.getenv("BROWSER") or "firefox"
+customization.tools.browser.secondary = ({chromium="firefox", firefox="chromium"})[customization.tools.browser.primary]
+
+-- alternative: override
+--customization.tools.browser.primary = "google-chrome-stable"
+--customization.tools.browser.secondary = "firefox"
+
+customization.tools.editor.primary = os.getenv("EDITOR") or "gvim"
+customization.tools.editor.secondary = ({emacs="gvim", gvim="emacs"})[customization.tools.editor.primary]
+
+-- alternative: override
+--customization.tools.editor.primary = "gvim"
+--customization.tools.editor.secondary = "emacs"
+
+local myapp = nil
+do
+    local function build(arg)
+        local current = {}
+        local keys = {} -- keep the keys sorted
+        for k, v in pairs(arg) do table.insert(keys, k) end
+        table.sort(keys)
+
+        for _, k in ipairs(keys) do
+            v = arg[k]
+            if type(v) == 'table' then
+                table.insert(current, {k, build(v)})
+            else
+                table.insert(current, {v, v})
+            end
+        end
+        return current
+    end
+    myapp = build(customization.tools)
+end
+
 -- Themes define colours, icons, and wallpapers
 ---[[
 
@@ -264,7 +313,7 @@ do
         beautiful.init(theme_path)
     end
 
-    init_theme(themes[5])
+    init_theme(themes[6])
 
     awful.spawn.with_shell("xsetroot -solid '#000000'")
 
@@ -294,55 +343,7 @@ do
 end
 --]]
 
--- This is used later as the default terminal and editor to run.
 
---{{
-local tools = {
-    terminal = "sakura",
-    system = {
-        filemanager = "pcmanfm",
-        taskmanager = "lxtask",
-    },
-    browser = {
-    },
-    editor = {
-    },
-}
-
-tools.browser.primary = os.getenv("BROWSER") or "firefox"
-tools.browser.secondary = ({chromium="firefox", firefox="chromium"})[tools.browser.primary]
-
--- alternative: override
---tools.browser.primary = "google-chrome-stable"
---tools.browser.secondary = "firefox"
-
-tools.editor.primary = os.getenv("EDITOR") or "gvim"
-tools.editor.secondary = ({emacs="gvim", gvim="emacs"})[tools.editor.primary]
-
--- alternative: override
---tools.editor.primary = "gvim"
---tools.editor.secondary = "emacs"
-
-local myapp = nil
-do
-    local function build(arg)
-        local current = {}
-        local keys = {} -- keep the keys sorted
-        for k, v in pairs(arg) do table.insert(keys, k) end
-        table.sort(keys)
-
-        for _, k in ipairs(keys) do
-            v = arg[k]
-            if type(v) == 'table' then
-                table.insert(current, {k, build(v)})
-            else
-                table.insert(current, {v, v})
-            end
-        end
-        return current
-    end
-    myapp = build(tools)
-end
 --}}
 
 -- Default modkey.
@@ -1524,7 +1525,7 @@ do
         text = text .. "You are running awesome <span fgcolor='red'>" .. awesome.version .. "</span> (<span fgcolor='red'>" .. awesome.release .. "</span>)"
         text = text .. "\n" .. "with config version <span fgcolor='red'>" .. customization.config.version .. "</span>"
         text = text .. "\n\n" .. "help can be found at the URL: <u>" .. customization.config.help_url .. "</u>"
-        text = text .. "\n\n\n\n" .. "opening in <b>" .. tools.browser.primary .. "</b>..."
+        text = text .. "\n\n\n\n" .. "opening in <b>" .. customization.tools.browser.primary .. "</b>..."
         instance = naughty.notify({
             preset = naughty.config.presets.normal,
             title="help about configuration",
@@ -1532,7 +1533,7 @@ do
             timeout = 20,
             screen = awful.screen.focused(),
         })
-        awful.spawn.with_shell(tools.browser.primary .. " '" .. customization.config.help_url .. "'")
+        awful.spawn.with_shell(customization.tools.browser.primary .. " '" .. customization.config.help_url .. "'")
     end
 end
 
@@ -1544,7 +1545,7 @@ end
 
 -- Create a launcher widget and a main menu
 mysystemmenu = {
-    --{ "manual", tools.terminal .. " -e man awesome" },
+    --{ "manual", customization.tools.terminal .. " -e man awesome" },
     { "&lock", customization.func.system_lock },
     { "&suspend", customization.func.system_suspend },
     { "hi&bernate", customization.func.system_hibernate },
@@ -1555,9 +1556,9 @@ mysystemmenu = {
 
 -- Create a launcher widget and a main menu
 myawesomemenu = {
-    --{ "manual", tools.terminal .. " -e man awesome" },
+    --{ "manual", customization.tools.terminal .. " -e man awesome" },
     { "hotkeys", function() return false, hotkeys_popup.show_help end},
-    { "&edit config", tools.editor.primary .. " " .. awful.util.getdir("config") .. "/rc.lua"  },
+    { "&edit config", customization.tools.editor.primary .. " " .. awful.util.getdir("config") .. "/rc.lua"  },
     { "&restart", awesome.restart },
     { "forcibly restart", customization.orig.restart },
     { "&quit", awesome.quit },
@@ -1570,7 +1571,7 @@ mymainmenu = awful.menu({
     { "&system", mysystemmenu },
     { "app &finder", customization.func.app_finder },
     { "&apps", myapp },
-    { "&terminal", tools.terminal },
+    { "&terminal", customization.tools.terminal },
     { "a&wesome", myawesomemenu, beautiful.awesome_icon },
     { "&client action", function ()
       customization.func.client_action_menu()
@@ -1619,7 +1620,7 @@ customization.widgets.cpuusage:set_color({
   stops = { {0, "#FF5656"}, {0.5, "#88A175"}, {1, "#AECF96" }}})
 vicious.register(customization.widgets.cpuusage, vicious.widgets.cpu, "$1", 5)
 do
-    local prog=tools.system.taskmanager
+    local prog=customization.tools.system.taskmanager
     local started=false
     customization.widgets.cpuusage:buttons(awful.util.table.join(
     awful.button({ }, 1, function ()
@@ -1637,7 +1638,7 @@ customization.widgets.memusage = wibox.widget.textbox()
 vicious.register(customization.widgets.memusage, vicious.widgets.mem,
   "<span fgcolor='yellow'>$1% ($2MB/$3MB)</span>", 3)
 do
-    local prog=tools.system.taskmanager
+    local prog=customization.tools.system.taskmanager
     local started=false
     customization.widgets.memusage:buttons(awful.util.table.join(
     awful.button({ }, 1, function ()
@@ -2151,7 +2152,7 @@ awful.key({ modkey }, "F1", customization.func.help),
 awful.key({ modkey, "Shift" }, "F1", hotkeys_popup.show_help),
 
 awful.key({ "Ctrl", "Shift" }, "Escape", function ()
-    awful.spawn.spawn(tools.system.taskmanager)
+    awful.spawn.spawn(customization.tools.system.taskmanager)
 end),
 
 --- Layout
@@ -2214,7 +2215,7 @@ awful.key({modkey}, "F4", function()
 end),
 
 awful.key({ modkey }, "c", function ()
-    awful.spawn.spawn(tools.editor.primary .. " " .. awful.util.getdir("config") .. "/rc.lua" )
+    awful.spawn.spawn(customization.tools.editor.primary .. " " .. awful.util.getdir("config") .. "/rc.lua" )
 end),
 
 awful.key({ modkey, "Shift" }, "/", function() mymainmenu:toggle({keygrabber=true}) end),
@@ -2240,9 +2241,9 @@ awful.key({ modkey, }, "x", function() mymainmenu:toggle({keygrabber=true}) end)
 
 awful.key({ modkey, }, "X", function() mymainmenu:toggle({keygrabber=true}) end),
 
-uniarg:key_repeat({ modkey,           }, "Return", function () awful.spawn.spawn(tools.terminal) end),
+uniarg:key_repeat({ modkey,           }, "Return", function () awful.spawn.spawn(customization.tools.terminal) end),
 
-uniarg:key_repeat({ modkey, "Mod1" }, "Return", function () awful.spawn.spawn("gksudo " .. tools.terminal) end),
+uniarg:key_repeat({ modkey, "Mod1" }, "Return", function () awful.spawn.spawn("gksudo " .. customization.tools.terminal) end),
 
 -- dynamic tagging
 
@@ -2362,15 +2363,15 @@ awful.key({ modkey, }, "/", customization.func.app_finder),
 --- everyday
 
 uniarg:key_repeat({ modkey, "Mod1", }, "l", function ()
-    awful.spawn.spawn(tools.system.filemanager)
+    awful.spawn.spawn(customization.tools.system.filemanager)
 end),
 
 uniarg:key_repeat({ modkey,  }, "e", function ()
-    awful.spawn.spawn(tools.system.filemanager)
+    awful.spawn.spawn(customization.tools.system.filemanager)
 end),
 
 uniarg:key_repeat({ modkey,  }, "E", function ()
-    awful.spawn.spawn(tools.system.filemanager)
+    awful.spawn.spawn(customization.tools.system.filemanager)
 end),
 
 uniarg:key_repeat({ modkey, "Mod1", }, "p", function ()
@@ -2382,19 +2383,19 @@ uniarg:key_repeat({ modkey, "Mod1", }, "r", function ()
 end),
 
 uniarg:key_repeat({ modkey, }, "i", function ()
-    awful.spawn.spawn(tools.editor.primary)
+    awful.spawn.spawn(customization.tools.editor.primary)
 end),
 
 uniarg:key_repeat({ modkey, "Shift" }, "i", function ()
-    awful.spawn.spawn(tools.editor.secondary)
+    awful.spawn.spawn(customization.tools.editor.secondary)
 end),
 
 uniarg:key_repeat({ modkey, }, "b", function ()
-    awful.spawn.spawn(tools.browser.primary)
+    awful.spawn.spawn(customization.tools.browser.primary)
 end),
 
 uniarg:key_repeat({ modkey, "Shift" }, "b", function ()
-    awful.spawn.spawn(tools.browser.secondary)
+    awful.spawn.spawn(customization.tools.browser.secondary)
 end),
 
 uniarg:key_repeat({ modkey, "Mod1", }, "v", function ()
@@ -2484,7 +2485,7 @@ awful.key({}, "Print", function ()
 end),
 
 uniarg:key_repeat({}, "XF86Launch1", function ()
-    awful.spawn.spawn(tools.terminal)
+    awful.spawn.spawn(customization.tools.terminal)
 end),
 
 awful.key({ }, "XF86Sleep", function ()
