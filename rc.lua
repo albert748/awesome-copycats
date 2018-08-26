@@ -141,8 +141,8 @@ end
 
 local cachedir = awful.util.getdir("cache")
 local awesome_tags_fname = cachedir .. "/awesome-tags"
-local awesome_autostart_once_fname = cachedir .. "/awesome-autostart-once-" .. os.getenv("XDG_SESSION_ID")
 local awesome_client_tags_fname = cachedir .. "/awesome-client-tags-" .. os.getenv("XDG_SESSION_ID")
+local awesome_restart_fname = cachedir .. "/awesome-restarting-" .. os.getenv("XDG_SESSION_ID")
 
 do
 
@@ -174,7 +174,6 @@ do
         end
         customization.func.client_opaque_off(nil) -- prevent compmgr glitches
         if not restart then
-            awful.spawn.with_shell("rm -rf " .. awesome_autostart_once_fname)
             awful.spawn.with_shell("rm -rf " .. awesome_client_tags_fname)
             if not customization.option.tag_persistent_p then
                 awful.spawn.with_shell("rm -rf " .. awesome_tags_fname .. '*')
@@ -196,6 +195,7 @@ do
                 end
             end
 
+            awful.spawn.with_shell("touch " .. awesome_restart_fname)
         end
     end)
 
@@ -2995,6 +2995,13 @@ awful.spawn.spawn = function (s)
 end
 
 -- XDG style autostart with "dex"
--- HACK continue
-awful.spawn.with_shell("if ! [ -e " .. awesome_autostart_once_fname .. " ]; then dex -a -e awesome; touch " .. awesome_autostart_once_fname .. "; fi")
+if not awful.util.file_readable(awesome_restart_fname) then
+    awful.spawn.with_shell("dex -a -e awesome")
+end
+
 customization.func.client_opaque_on(nil) -- start xcompmgr
+
+-- always remove restart flag at last of configuration
+if awful.util.file_readable(awesome_restart_fname) then
+    awful.spawn.with_shell("rm " .. awesome_restart_fname)
+end
