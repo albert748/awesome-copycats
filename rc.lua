@@ -467,8 +467,15 @@ customization.func.system_power_off = function ()
     })
 end
 
+local app_finder_started = false
 customization.func.app_finder = function ()
-    awful.spawn.spawn("xfce4-appfinder")
+    if not app_finder_started then
+        awful.spawn.spawn("xfce4-appfinder")
+        app_finder_started = true
+    else
+        awful.spawn.spawn("xfce4-appfinder --quit")
+        app_finder_started = false
+    end
 end
 
 -- {{ client actions
