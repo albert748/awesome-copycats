@@ -313,7 +313,7 @@ do
         beautiful.init(theme_path)
     end
 
-    init_theme(themes[6])
+    init_theme(themes[5])
 
     awful.spawn.with_shell("xsetroot -solid '#000000'")
 
