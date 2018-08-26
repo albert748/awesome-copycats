@@ -2827,6 +2827,9 @@ awful.rules.rules = {
             opacity = customization.default.property.default_naughty_opacity,
             screen = awful.screen.preferred,
             placement = awful.placement.no_overlap+awful.placement.no_offscreen,
+
+            -- remove gaps between windows
+            size_hints_honor = false,
         }
     },
 
