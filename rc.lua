@@ -3006,7 +3006,7 @@ end
 
 -- XDG style autostart with "dex"
 if not awful.util.file_readable(awesome_restart_fname) then
-    awful.spawn.with_shell("dex -a -e awesome")
+    awful.spawn.with_shell("dex -a")
 end
 
 customization.func.client_opaque_on(nil) -- start xcompmgr
